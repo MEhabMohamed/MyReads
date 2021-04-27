@@ -7,6 +7,7 @@ import {
   Route,
   Link
 } from "react-router-dom"
+import Shelves from './Shelves'
 
 class BooksApp extends React.Component {
   state = {
@@ -43,7 +44,7 @@ class BooksApp extends React.Component {
     
   render() {
     const searchTerms = ['Android', 'Art', 'Artificial Intelligence', 'Astronomy', 'Austen', 'Baseball', 'Basketball', 'Bhagat', 'Biography', 'Brief', 'Business', 'Camus', 'Cervantes', 'Christie', 'Classics', 'Comics', 'Cook', 'Cricket', 'Cycling', 'Desai', 'Design', 'Development', 'Digital Marketing', 'Drama', 'Drawing', 'Dumas', 'Education', 'Everything', 'Fantasy', 'Film', 'Finance', 'First', 'Fitness', 'Football', 'Future', 'Games', 'Gandhi', 'Homer', 'Horror', 'Hugo', 'Ibsen', 'Journey', 'Kafka', 'King', 'Lahiri', 'Larsson', 'Learn', 'Literary Fiction', 'Make', 'Manage', 'Marquez', 'Money', 'Mystery', 'Negotiate', 'Painting', 'Philosophy', 'Photography', 'Poetry', 'Production', 'Programming', 'React', 'Redux', 'River', 'Robotics', 'Rowling', 'Satire', 'Science Fiction', 'Shakespeare', 'Singh', 'Swimming', 'Tale', 'Thrun', 'Time', 'Tolstoy', 'Travel', 'Ultimate', 'Virtual Reality', 'Web Development', 'iOS'].map(v => v.toLowerCase())
-    const showingResults = this.state.query !== '' && (this.state.search !== (null || undefined)) ? this.state.search : null
+    const showingResults = this.state.query !== '' && (this.state.search !== (null || undefined)) && searchTerms.includes(this.state.query) ? this.state.search : null;
     return (
       <Router>
       <div className="app">
@@ -60,7 +61,7 @@ class BooksApp extends React.Component {
             <div className="search-books-results">
               <p>{`Available search categories, please use your favorite: `}{searchTerms.map((i) => {return <button key={i}>{i}</button>})}</p>
               <ol className="books-grid">
-                {(this.state.search !== undefined || null) && showingResults !== null ? showingResults.map((b) => {
+                {(this.state.search !== undefined || null) && (showingResults !== null || undefined) ? showingResults.map((b) => {
                   return <li key={b.id}>
                   <div className="book">
                     <div className="book-top">
@@ -91,87 +92,9 @@ class BooksApp extends React.Component {
             </div>
             <div className="list-books-content">
               <div>
-                <div className="bookshelf">
-                  <h2 className="bookshelf-title">Currently Reading</h2>
-                  <div className="bookshelf-books">
-                    <ol className="books-grid">
-                      {this.state.books.filter((b) => b.shelf === "currentlyReading").map((b) => {
-                        return <li key={b.id}>
-                        <div className="book">
-                          <div className="book-top">
-                            <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: (b.imageLinks === undefined ? "No Image There" : `url(${b.imageLinks.smallThumbnail})`) }}></div>
-                            <div className="book-shelf-changer">
-                              <select value={b.shelf} onChange={(event) => this.updateShelf(b, event.target.value)}>
-                                <option value="move" disabled>Move to...</option>
-                                <option value="currentlyReading">Currently Reading</option>
-                                <option value="wantToRead">Want to Read</option>
-                                <option value="read">Read</option>
-                                <option value="none">None</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div className="book-title">{b.title}</div>
-                          <div className="book-authors">{b.authors === undefined ? ['Unknown Author'] : b.authors.length > 1 ? `${b.authors.map(m => m)}` : `${b.authors[0]}`}</div>
-                        </div>
-                      </li>
-                      })}
-                    </ol>
-                  </div>
-                </div>
-                <div className="bookshelf">
-                  <h2 className="bookshelf-title">Want to Read</h2>
-                  <div className="bookshelf-books">
-                    <ol className="books-grid">
-                      {this.state.books.filter((b) => b.shelf === "wantToRead").map((b) => {
-                        return <li key={b.id}>
-                        <div className="book">
-                          <div className="book-top">
-                            <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: (b.imageLinks === undefined ? "No Image There" : `url(${b.imageLinks.smallThumbnail})`) }}></div>
-                            <div className="book-shelf-changer">
-                              <select value={b.shelf} onChange={(event) => this.updateShelf(b, event.target.value)}>
-                                <option value="move" disabled>Move to...</option>
-                                <option value="currentlyReading">Currently Reading</option>
-                                <option value="wantToRead">Want to Read</option>
-                                <option value="read">Read</option>
-                                <option value="none">None</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div className="book-title">{b.title}</div>
-                          <div className="book-authors">{b.authors === undefined ? ['Unknown Author'] : b.authors.length > 1 ? `${b.authors.map(m => m)}` : `${b.authors[0]}`}</div>
-                        </div>
-                      </li>
-                      })}
-                    </ol>
-                  </div>
-                </div>
-                <div className="bookshelf">
-                  <h2 className="bookshelf-title">Read</h2>
-                  <div className="bookshelf-books">
-                    <ol className="books-grid">
-                      {this.state.books.filter((b) => b.shelf === "read").map((b) => {
-                        return <li key={b.id}>
-                        <div className="book">
-                          <div className="book-top">
-                            <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: (b.imageLinks === undefined ? "No Image There" : `url(${b.imageLinks.smallThumbnail})`) }}></div>
-                            <div className="book-shelf-changer">
-                              <select value={b.shelf} onChange={(event) => this.updateShelf(b, event.target.value)}>
-                                <option value="move" disabled>Move to...</option>
-                                <option value="currentlyReading">Currently Reading</option>
-                                <option value="wantToRead">Want to Read</option>
-                                <option value="read">Read</option>
-                                <option value="none">None</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div className="book-title">{b.title}</div>
-                          <div className="book-authors">{b.authors === undefined ? ['Unknown Author'] : b.authors.length > 1 ? `${b.authors.map(m => m)}` : `${b.authors[0]}`}</div>
-                        </div>
-                      </li>
-                      })}
-                    </ol>
-                  </div>
-                </div>
+                <Shelves books={this.state.books} definition={'Currently Reading'} shelf={"currentlyReading"} update={this.updateShelf} />
+                <Shelves books={this.state.books} definition={'Want To Read'} shelf={"wantToRead"} update={this.updateShelf} />
+                <Shelves books={this.state.books} definition={'Read'} shelf={"read"} update={this.updateShelf} />
               </div>
             </div>
             <div className="open-search">
