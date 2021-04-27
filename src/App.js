@@ -13,38 +13,38 @@ class BooksApp extends React.Component {
     books: [],
     query: '',
     search: [],
-    updatedBook: []
   }
   
   updateQuery = (query) => {
     this.setState(() => ({
       query: query
     }))
+    query !== '' && BooksAPI.search(query).then((books) => {this.setState(() => ({search: books}))})
   }
 
-  componentDidMount() {
-    BooksAPI.getAll().then((books) => {this.setState(() => ({books: books}))})
-    }
-
-  chooseCategory = (category) => {
-    BooksAPI.search(`${category}`).then((books) => {this.setState(() => ({search: books}))});
+  async componentDidMount() {
+    const books = await BooksAPI.getAll();
+    this.setState(() => ({books: books}))
   }
-
+  
   updateShelf = (book, shelf) => {
-    BooksAPI.update(book, shelf)
-    BooksAPI.getAll().then((books) => {this.setState(() => ({books: books}))})
-    BooksAPI.get(book.id).then((book) => this.setState(() => ({updatedBook: book})))
+    const newShelf = async() => await BooksAPI.update(book, shelf)
+    try {
+      newShelf().then(() => BooksAPI.getAll()
+      .then((books) => this.setState(() => ({books: books}))))
+    } catch(error) {
+      console.log('error', error)
+    }
   }
 
   shelfValue = (b) => {
-    return b.id !== this.state.books.filter(c => b.id === c.id).map(c => c.id).toLocaleString() ? 'none' : this.state.books.filter(c => b.id === c.id).map(c => c.shelf)
+    return b.id !== this.state.books.filter(c => b.id === c.id).map(c => c.id).toLocaleString() ? 'none' : this.state.books.filter(c => b.id === c.id).map(c => c.shelf).toLocaleString()
   }
     
   render() {
-    const searchTerms = ['Android', 'Art', 'Artificial Intelligence', 'Astronomy', 'Austen', 'Baseball', 'Basketball', 'Bhagat', 'Biography', 'Brief', 'Business', 'Camus', 'Cervantes', 'Christie', 'Classics', 'Comics', 'Cook', 'Cricket', 'Cycling', 'Desai', 'Design', 'Development', 'Digital Marketing', 'Drama', 'Drawing', 'Dumas', 'Education', 'Everything', 'Fantasy', 'Film', 'Finance', 'First', 'Fitness', 'Football', 'Future', 'Games', 'Gandhi', 'Homer', 'Horror', 'Hugo', 'Ibsen', 'Journey', 'Kafka', 'King', 'Lahiri', 'Larsson', 'Learn', 'Literary Fiction', 'Make', 'Manage', 'Marquez', 'Money', 'Mystery', 'Negotiate', 'Painting', 'Philosophy', 'Photography', 'Poetry', 'Production', 'Programming', 'React', 'Redux', 'River', 'Robotics', 'Rowling', 'Satire', 'Science Fiction', 'Shakespeare', 'Singh', 'Swimming', 'Tale', 'Thrun', 'Time', 'Tolstoy', 'Travel', 'Ultimate', 'Virtual Reality', 'Web Development', 'iOS']
-    const showingResults = this.state.query !== '' && (this.state.search !== (null || undefined))  ? this.state.search.filter((c) => {
-     return (c.authors === undefined) ? (c.authors = ["not specified"]) && c.title.toLowerCase().includes(this.state.query.toLowerCase()) : (c.authors.length > 1 ? (c.authors[0].toLowerCase().includes(this.state.query.toLowerCase()) || c.authors[1].toLowerCase().includes(this.state.query.toLowerCase()) || c.title.toLowerCase().includes(this.state.query.toLowerCase())) : (c.authors[0].toLowerCase().includes(this.state.query.toLowerCase()) || c.title.toLowerCase().includes(this.state.query.toLowerCase())))}) : null;
-     return (
+    const searchTerms = ['Android', 'Art', 'Artificial Intelligence', 'Astronomy', 'Austen', 'Baseball', 'Basketball', 'Bhagat', 'Biography', 'Brief', 'Business', 'Camus', 'Cervantes', 'Christie', 'Classics', 'Comics', 'Cook', 'Cricket', 'Cycling', 'Desai', 'Design', 'Development', 'Digital Marketing', 'Drama', 'Drawing', 'Dumas', 'Education', 'Everything', 'Fantasy', 'Film', 'Finance', 'First', 'Fitness', 'Football', 'Future', 'Games', 'Gandhi', 'Homer', 'Horror', 'Hugo', 'Ibsen', 'Journey', 'Kafka', 'King', 'Lahiri', 'Larsson', 'Learn', 'Literary Fiction', 'Make', 'Manage', 'Marquez', 'Money', 'Mystery', 'Negotiate', 'Painting', 'Philosophy', 'Photography', 'Poetry', 'Production', 'Programming', 'React', 'Redux', 'River', 'Robotics', 'Rowling', 'Satire', 'Science Fiction', 'Shakespeare', 'Singh', 'Swimming', 'Tale', 'Thrun', 'Time', 'Tolstoy', 'Travel', 'Ultimate', 'Virtual Reality', 'Web Development', 'iOS'].map(v => v.toLowerCase())
+    const showingResults = this.state.query !== '' && (this.state.search !== (null || undefined)) ? this.state.search : null
+    return (
       <Router>
       <div className="app">
         <Switch>
@@ -58,7 +58,7 @@ class BooksApp extends React.Component {
               </div>
             </div>
             <div className="search-books-results">
-              <p>{`Available search categories, please select: `}{searchTerms.map((i) => {return <button key={i} onClick={() => this.chooseCategory(i)}>{i}</button>})}</p>
+              <p>{`Available search categories, please use your favorite: `}{searchTerms.map((i) => {return <button key={i}>{i}</button>})}</p>
               <ol className="books-grid">
                 {(this.state.search !== undefined || null) && showingResults !== null ? showingResults.map((b) => {
                   return <li key={b.id}>
@@ -66,7 +66,7 @@ class BooksApp extends React.Component {
                     <div className="book-top">
                       <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: (b.imageLinks === undefined ? "No Image There" : `url(${b.imageLinks.smallThumbnail})`) }}></div>
                       <div className="book-shelf-changer">
-                        <select value={this.state.query.length>1 && this.shelfValue(b)} onChange={(event) => this.updateShelf(b, event.target.value)}>
+                        <select value={this.shelfValue(b)} onChange={(event) => this.updateShelf(b, event.target.value)}>
                           <option value="move" disabled>Move to...</option>
                           <option value="currentlyReading">Currently Reading</option>
                           <option value="wantToRead">Want to Read</option>
@@ -76,7 +76,7 @@ class BooksApp extends React.Component {
                       </div>
                     </div>
                     <div className="book-title">{b.title}</div>
-                    <div className="book-authors">{b.authors === undefined ? ['Unknown Author'] : b.authors.length > 1 ? `${b.authors[0]} & \n${b.authors[1]}` : `${b.authors[0]}`}</div>
+                    <div className="book-authors">{b.authors === undefined ? ['Unknown Author'] : b.authors.length > 1 ? `${b.authors.map(m => m)}` : `${b.authors[0]}`}</div>
                   </div>
                 </li>
                 }) : null}
@@ -99,7 +99,7 @@ class BooksApp extends React.Component {
                         return <li key={b.id}>
                         <div className="book">
                           <div className="book-top">
-                            <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: `url(${b.imageLinks.smallThumbnail})` }}></div>
+                            <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: (b.imageLinks === undefined ? "No Image There" : `url(${b.imageLinks.smallThumbnail})`) }}></div>
                             <div className="book-shelf-changer">
                               <select value={b.shelf} onChange={(event) => this.updateShelf(b, event.target.value)}>
                                 <option value="move" disabled>Move to...</option>
@@ -111,7 +111,7 @@ class BooksApp extends React.Component {
                             </div>
                           </div>
                           <div className="book-title">{b.title}</div>
-                          <div className="book-authors">{b.authors.length > 1 ? `${b.authors[0]} & \n${b.authors[1]}` : `${b.authors[0]}`}</div>
+                          <div className="book-authors">{b.authors === undefined ? ['Unknown Author'] : b.authors.length > 1 ? `${b.authors.map(m => m)}` : `${b.authors[0]}`}</div>
                         </div>
                       </li>
                       })}
@@ -126,7 +126,7 @@ class BooksApp extends React.Component {
                         return <li key={b.id}>
                         <div className="book">
                           <div className="book-top">
-                            <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: `url(${b.imageLinks.smallThumbnail})` }}></div>
+                            <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: (b.imageLinks === undefined ? "No Image There" : `url(${b.imageLinks.smallThumbnail})`) }}></div>
                             <div className="book-shelf-changer">
                               <select value={b.shelf} onChange={(event) => this.updateShelf(b, event.target.value)}>
                                 <option value="move" disabled>Move to...</option>
@@ -138,7 +138,7 @@ class BooksApp extends React.Component {
                             </div>
                           </div>
                           <div className="book-title">{b.title}</div>
-                          <div className="book-authors">{b.authors.length > 1 ? `${b.authors[0]} & \n${b.authors[1]}` : `${b.authors[0]}`}</div>
+                          <div className="book-authors">{b.authors === undefined ? ['Unknown Author'] : b.authors.length > 1 ? `${b.authors.map(m => m)}` : `${b.authors[0]}`}</div>
                         </div>
                       </li>
                       })}
@@ -153,7 +153,7 @@ class BooksApp extends React.Component {
                         return <li key={b.id}>
                         <div className="book">
                           <div className="book-top">
-                            <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: `url(${b.imageLinks.smallThumbnail})` }}></div>
+                            <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: (b.imageLinks === undefined ? "No Image There" : `url(${b.imageLinks.smallThumbnail})`) }}></div>
                             <div className="book-shelf-changer">
                               <select value={b.shelf} onChange={(event) => this.updateShelf(b, event.target.value)}>
                                 <option value="move" disabled>Move to...</option>
@@ -165,7 +165,7 @@ class BooksApp extends React.Component {
                             </div>
                           </div>
                           <div className="book-title">{b.title}</div>
-                          <div className="book-authors">{b.authors.length > 1 ? `${b.authors[0]} & \n${b.authors[1]}` : `${b.authors[0]}`}</div>
+                          <div className="book-authors">{b.authors === undefined ? ['Unknown Author'] : b.authors.length > 1 ? `${b.authors.map(m => m)}` : `${b.authors[0]}`}</div>
                         </div>
                       </li>
                       })}

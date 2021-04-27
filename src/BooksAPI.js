@@ -16,13 +16,13 @@ export const get = (bookId) =>
     .then(res => res.json())
     .then(data => data.book)
 
-export const getAll = async () =>
- await fetch(`${api}/books`, { headers })
+export const getAll = () =>
+  fetch(`${api}/books`, { headers })
     .then(res => res.json())
     .then(data => data.books)
 
-export const update = async (book, shelf) =>
- await fetch(`${api}/books/${book.id}`, {
+export const update = (book, shelf) =>
+  fetch(`${api}/books/${book.id}`, {
     method: 'PUT',
     headers: {
       ...headers,
