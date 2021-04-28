@@ -11,4 +11,4 @@ To get started developing right away:
 * install all project dependencies with `npm install`
 * start the development server with `npm start`
 
-There is a magic trick where while using the search input, using less than two letter words would not give you the correct state of the shelves on the search page.
+Enjoy your surf
